@@ -417,7 +417,7 @@
             $Section->setAttributeNode($Section_attr);
             // now the fields in the section
             $Field_attr = new DOMAttr('Name','Non-ASTRO\Signaling Type');
-            $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['Non-ASTRO\Signaling Type')] );
+            $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['Non-ASTRO\Signaling Type'] );
             $Field->setAttributeNode($Field_attr);
             $Section->appendChild($Field);
         
@@ -528,7 +528,7 @@
             $Section->appendChild($Field);
             
             $Field_attr = new DOMAttr('Name','Non-ASTRO Call Hot List');
-            $Field = $xml->createElement( "Field", '$personality[$PersName]['ConvPers']['Non-ASTRO Call Hot List'] );
+            $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['Non-ASTRO Call Hot List'] );
             $Field->setAttributeNode($Field_attr);
             $Section->appendChild($Field);
             
