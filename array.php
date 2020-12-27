@@ -57,8 +57,6 @@
             $type = $clean["Type"];
             $personality[$pers][$type][$freqname] = $clean ;
             unset ($clean, $type, $pers, $freqname);
-
-            
         }
         
         elseif (empty($row[0])) { echo "Blank Type on row ", $i , ": " , (implode(", ", $row)), "\n"; }
@@ -66,20 +64,56 @@
         $i++;
         };
     unset($i);
-    print_R($personality);
+   // print_R($personality);
     
     // check that if there's a Freq, there's a Conv and vice versa.  If  not,
     // add in the defaults.
+    foreach ($personality as $key => $row) {
+        print ($key) . "\n";
+        if (empty($personality[$key]['ConvPers'])) {
+            print "ERROR: '" . $key . "' is missing Conventional Personality\n";
+            $pers = $key;
+            $type = "ConvPers" ;
+            $personality[$pers][$type] = $ConvDefaults ;
+            unset ($clean, $type, $pers, $freqname);
+
+            
+        };
+        if (empty($personality[$key]['Freq'])) {
+            print "ERROR: '" . $key . "' is missing at least one frequency\n";
+            $pers = $key;
+            $freqname = "UNSET";
+            $type = "Freq";
+            $personality[$pers][$type][$freqname] = $FreqDefaults ;
+            $personality[$pers][$type][$freqname]['Conventional Personality Name'] = $pers;
+            unset ($clean, $type, $pers, $freqname);
+        };
+    };
+    
+    print_r ($personality);
+         // clean up the array
+           // $clean =  SetDefaults($ConvDefaults, (array_combine($ConvHeader, $row)));
+            //$pers = $clean["Conventional Personality Name"];
+           // $type = $clean["Type"];
+           // $personality[$pers][$type] = $clean ;
+           // unset ($clean, $type, $pers);
+        //}
+
+    
+    
+    
+  
+    // should we clean up the array with htmlspecialchars() since XML will die if fed an & sign?
     
     // now we should have the data in the right array.
     
-    foreach (array_keys($personality) as $PersName) {
-        echo "$PersName \n";
+    //foreach (array_keys($personality) as $PersName) {
+      //  echo "$PersName \n";
       //  foreach (array_keys($personality[$value]) as $conv) {
       //      echo "Value: $value Conv: $conv \n";
       //      print_r ($personality[$value][$conv]);
       //  };
-    };
+  //  };
     
     
     
@@ -228,21 +262,21 @@
         
         $Node->appendChild($Section);
     
-    // Frequency options section
-    $Section = $xml->createElement( "Section" );
-    $Section_attr = new DOMAttr('Name','Frequency Options');
-    $Section->setAttributeNode($Section_attr);
-    $Section_attr = new DOMAttr('id','10148');
-    $Section->setAttributeNode($Section_attr);
-    $Section_attr = new DOMAttr('Embedded','True');
-    $Section->setAttributeNode($Section_attr);
-    // now the Embedded set
-    $EmbeddedRecset_attr = new DOMAttr('Name','Frequency Options');
-    $EmbeddedRecset = $xml->createElement( "EmbeddedRecset" );
-    $EmbeddedRecset->setAttributeNode($EmbeddedRecset_attr);
-    $EmbeddedRecset_attr = new DOMAttr('Id','0');
-    $EmbeddedRecset->setAttributeNode($EmbeddedRecset_attr);
-    $Section->appendChild($EmbeddedRecset);
+        // Frequency options section
+        $Section = $xml->createElement( "Section" );
+        $Section_attr = new DOMAttr('Name','Frequency Options');
+        $Section->setAttributeNode($Section_attr);
+        $Section_attr = new DOMAttr('id','10148');
+        $Section->setAttributeNode($Section_attr);
+        $Section_attr = new DOMAttr('Embedded','True');
+        $Section->setAttributeNode($Section_attr);
+        // now the Embedded set
+        $EmbeddedRecset_attr = new DOMAttr('Name','Frequency Options');
+        $EmbeddedRecset = $xml->createElement( "EmbeddedRecset" );
+        $EmbeddedRecset->setAttributeNode($EmbeddedRecset_attr);
+        $EmbeddedRecset_attr = new DOMAttr('Id','0');
+        $EmbeddedRecset->setAttributeNode($EmbeddedRecset_attr);
+        $Section->appendChild($EmbeddedRecset);
     
         // test if freq is defined
         foreach (array_keys($personality[$PersName]['Freq']) as $Freq) {
@@ -431,63 +465,63 @@
             $Field->setAttributeNode($Field_attr);
             $Section->appendChild($Field);
         
-        $Field_attr = new DOMAttr('Name','Emergency Revert\Revert Type');
-        $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['Emergency Revert\Revert Type'] );
-        $Field->setAttributeNode($Field_attr);
-        $Section->appendChild($Field);
-        
-        $Field_attr = new DOMAttr('Name','ASTRO\ASTRO System');
-        $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['ASTRO\ASTRO System'] );
-        $Field->setAttributeNode($Field_attr);
-        $Section->appendChild($Field);
-        
-        $Field_attr = new DOMAttr('Name','ASTRO\Late Entry Fast Unmute');
-        $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['ASTRO\Late Entry Fast Unmute'] );
-        $Field->setAttributeNode($Field_attr);
-        $Section->appendChild($Field);
-        
-        $Field_attr = new DOMAttr('Name','Non-ASTRO\PTT ID');
-        $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['Non-ASTRO\PTT ID'] );
-        $Field->setAttributeNode($Field_attr);
-        $Section->appendChild($Field);
-        
-        $Field_attr = new DOMAttr('Name','Emergency Revert\Revert Zone');
-        $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['Emergency Revert\Revert Zone'] );
-        $Field->setAttributeNode($Field_attr);
-        $Section->appendChild($Field);
-        
-        $Field_attr = new DOMAttr('Name','Non-ASTRO\Emergency PTT ID');
-        $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['Non-ASTRO\Emergency PTT ID'] );
-        $Field->setAttributeNode($Field_attr);
-        $Section->appendChild($Field);
-        
-        $Field_attr = new DOMAttr('Name','ASTRO\ASTRO Rx Unmute Rule');
-        $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['ASTRO\ASTRO Rx Unmute Rule'] );
-        $Field->setAttributeNode($Field_attr);
-        $Section->appendChild($Field);
-        
-        $Field_attr = new DOMAttr('Name','Emergency Revert\Revert Channel');
-        $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['Emergency Revert\Revert Channel'] );
-        $Field->setAttributeNode($Field_attr);
-        $Section->appendChild($Field);
-        
-        $Field_attr = new DOMAttr('Name','Revert Talkgroup\Revert Talkgroup');
-        $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['Revert Talkgroup\Revert Talkgroup'] );
-        $Field->setAttributeNode($Field_attr);
-        $Section->appendChild($Field);
-        
-        $Field_attr = new DOMAttr('Name','Revert Talkgroup\Revert TG Secure / Clear Strapping');
-        $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['Revert Talkgroup\Revert TG Secure / Clear Strapping'] );
-        $Field->setAttributeNode($Field_attr);
-        $Section->appendChild($Field);
-        
-        $Field_attr = new DOMAttr('Name','Revert Talkgroup\Revert TG Key Select');
-        $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['Revert Talkgroup\Revert TG Key Select'] );
-        $Field->setAttributeNode($Field_attr);
-        $Section->appendChild($Field);
-        
-        $Node->appendChild($Section);
-        
+            $Field_attr = new DOMAttr('Name','Emergency Revert\Revert Type');
+            $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['Emergency Revert\Revert Type'] );
+            $Field->setAttributeNode($Field_attr);
+            $Section->appendChild($Field);
+            
+            $Field_attr = new DOMAttr('Name','ASTRO\ASTRO System');
+            $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['ASTRO\ASTRO System'] );
+            $Field->setAttributeNode($Field_attr);
+            $Section->appendChild($Field);
+            
+            $Field_attr = new DOMAttr('Name','ASTRO\Late Entry Fast Unmute');
+            $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['ASTRO\Late Entry Fast Unmute'] );
+            $Field->setAttributeNode($Field_attr);
+            $Section->appendChild($Field);
+            
+            $Field_attr = new DOMAttr('Name','Non-ASTRO\PTT ID');
+            $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['Non-ASTRO\PTT ID'] );
+            $Field->setAttributeNode($Field_attr);
+            $Section->appendChild($Field);
+            
+            $Field_attr = new DOMAttr('Name','Emergency Revert\Revert Zone');
+            $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['Emergency Revert\Revert Zone'] );
+            $Field->setAttributeNode($Field_attr);
+            $Section->appendChild($Field);
+            
+            $Field_attr = new DOMAttr('Name','Non-ASTRO\Emergency PTT ID');
+            $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['Non-ASTRO\Emergency PTT ID'] );
+            $Field->setAttributeNode($Field_attr);
+            $Section->appendChild($Field);
+            
+            $Field_attr = new DOMAttr('Name','ASTRO\ASTRO Rx Unmute Rule');
+            $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['ASTRO\ASTRO Rx Unmute Rule'] );
+            $Field->setAttributeNode($Field_attr);
+            $Section->appendChild($Field);
+            
+            $Field_attr = new DOMAttr('Name','Emergency Revert\Revert Channel');
+            $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['Emergency Revert\Revert Channel'] );
+            $Field->setAttributeNode($Field_attr);
+            $Section->appendChild($Field);
+            
+            $Field_attr = new DOMAttr('Name','Revert Talkgroup\Revert Talkgroup');
+            $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['Revert Talkgroup\Revert Talkgroup'] );
+            $Field->setAttributeNode($Field_attr);
+            $Section->appendChild($Field);
+            
+            $Field_attr = new DOMAttr('Name','Revert Talkgroup\Revert TG Secure / Clear Strapping');
+            $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['Revert Talkgroup\Revert TG Secure / Clear Strapping'] );
+            $Field->setAttributeNode($Field_attr);
+            $Section->appendChild($Field);
+            
+            $Field_attr = new DOMAttr('Name','Revert Talkgroup\Revert TG Key Select');
+            $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['Revert Talkgroup\Revert TG Key Select'] );
+            $Field->setAttributeNode($Field_attr);
+            $Section->appendChild($Field);
+            
+            $Node->appendChild($Section);
+            
         
         
             // Non-ASTRO Call options section
@@ -830,7 +864,10 @@
             $Field->setAttributeNode($Field_attr);
             $Section->appendChild($Field);
             $Field_attr = new DOMAttr('Name','Scan Select');
-            $Field = $xml->createElement( "Field", $personality[$PersName]['ConvPers']['Scan Select'] );
+        
+        echo "PERS: ", $PersName , " SELECT " , htmlspecialchars($personality[$PersName]['ConvPers']['Scan Select']);
+        echo "\n";
+            $Field = $xml->createElement( "Field", htmlspecialchars($personality[$PersName]['ConvPers']['Scan Select']) );
             $Field->setAttributeNode($Field_attr);
             $Section->appendChild($Field);
             $Field_attr = new DOMAttr('Name','ASTRO OTAR Profile Index');
