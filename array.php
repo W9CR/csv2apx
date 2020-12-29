@@ -7,12 +7,27 @@
     
     $FreqHeader = array( 1 =>'Type', 'Conventional Personality Name', 'Frequency Name', 'Rx / TA Frequency (MHz)', 'Tx Frequency (MHz)', 'Direct / Talkaround', 'Direct Frequency (MHz)', 'Tx Deviation / Channel Spacing', 'Rx / TA  Network ID', 'Tx Network ID', 'Direct Network ID', 'ASTRO Talkgroup ID', 'User Selectable PL (MPL)', 'User Selectable PL [MPL]', 'Rx / TA Squelch Type', 'Rx / TA PL Freq', 'Rx / TA  PL Code', 'Rx / TA DPL Code', 'Rx / TA DPL Invert', 'Tx Squelch Type', 'Tx PL Freq', 'Tx PL Code', 'Tx DPL Code', 'Tx DPL Invert', 'Direct Squelch Type', 'Direct PL Freq', 'Direct PL Code', 'Direct DPL Code', 'Direct DPL Invert', 'Mixed Vote Scan Persistent Member');
     
+    /*Header for Zone */
+    $ZoneHeader = array (1 =>'Type', 'Zone Name', 'Zone Announcement', 'Dynamic Zone Enable', 'Protected Zone', 'FPP Enable');
+    
+    /*Header for Channel assignment to Zone */
+    $ChanAssListHeader = array ( 1 => 'Type', 'Zone Name', 'Channel Name', 'Channel Type', 'Personality', 'Trunking Talkgroup', 'Conventional Frequency Option', 'Radio Profile Selection', 'Channel Announcement', 'Channel Color Backlight Selection', 'Personnel Accountability Sector ID (hex)');
+    /*Header for ScanList */
+    $ScanListHeader = array( 1 => 'Type', 'Scan List Alias', 'Scan Type', 'Trunking System\Record', 'ASTRO Type', 'Priority Assignment\Dynamic Priority', 'Priority Assignment\Priority 1 - Type', 'riority Assignment\Priority Member 1', 'Priority Assignment\Priority 2 - Type', 'Priority Assignment\Priority Member 2', 'Non-Priority Members', 'Designated Voice Tx Member Type', 'Designated Voice Tx Member', 'Designated Data Rx / Tx Type', 'Designated Data Member', 'Data Tx Limited Patience Timer (ms)', 'Voting Scan Delay Timer', 'Display Strongest Voted Channel', 'Tx Steering', 'Mixed Conventional Vote Scan Inactivity Timer (min)');
+    /*Header for ScanListMembers */
+    $ScanListMemberHeader = array( 1 =>'Type', 'Scan List Alias', 'Zone', 'Channel');
     
     /* now we should have a defualt array/row of values for all types of records, and then these will merge with each row */
-    
     $ConvDefaults = array_combine($ConvHeader, (array( 1 => 'ConvPers', 'FSG Tampa FM', '<DVRS Disabled>', 'False', 'Mixed Mode', 'Standard', '0', '6', 'True', 'True', 'Disabled', 'Non-ASTRO', '180', 'True', 'True', 'High', 'False', 'Ham P25', 'C4FM', 'Digital CSQ', 'True', 'MDC', 'Ham MDC', 'True', 'False', 'Selected Channel', '<None>', '<None>', '1', 'Clear', 'Sec Key 1', '<Tone Signaling Disabled>', 'Disabled', 'And', 'Disabled', 'False', 'None', 'False', 'False', 'LIST 1', 'Disabled', 'False', 'Disabled', 'False', 'False', 'LIST 1', 'True', 'Ham', 'Selectable', 'False', 'Manual', '<Tone Signaling Disabled>', 'MDC', '1', '<Disabled>', 'None', '1', '<Disabled>', 'False', 'True', 'False', 'False', 'Disabled', '<None>', 'False', 'False', 'False', 'Disabled', 'False', 'Disabled', 'False', 'False', 'Digital', 'Disabled', 'False', 'True', '15', 'Unlimited', 'Timing 1', 'Code 1', 'ASTRO', 'True', 'False', 'Clear', 'Select', 'Sec Key 1', 'False', 'Clear', 'Sec Key 1', 'False', 'True', 'False', '<Disabled>', '0', 'Non-XL & XL', 'Both', 'None', '50', 'Disabled', 'False', 'False')));
     
     $FreqDefaults = array_combine($FreqHeader, (array( 1=> 'Freq', 'Default Pers', 'DEFAULT W9CR', '146.520000', '1465.520000', 'True', '443.525000', '5 kHz / 25 kHz', '659', '659', '659', 'WorldWide', 'False', 'Disabled', 'CSQ', '146.2', '4B', '023', 'False', 'Disabled', '146.2', '4B', '023', 'False', 'PL', '146.2', '4B', '023', 'False', 'False')));
+    $ZoneDefaults = array_combine($ZoneHeader, (array( 1=> 'Zone', 'ZONE 1', '<None>', 'FALSE', 'TRUE', 'TRUE')));
+    $ChanAssListDefaults = array_combine($ChanAssListHeader, (array( 1=> 'ChanAssList', 'Tampa Bay', 'FSG StPete P25', 'Cnv', 'FSG StPete P25', '', 'OPTION 1', '<Last Selected>', '<None>', 'Orange', '0')));
+    $ScanListDefaults = array_combine($ScanListHeader, (array( 1=>'ScanList', 'Scan List 1', 'Conventional', 'Trk Sys 1', '', 'False', 'Disabled', '<None>', 'Disabled', '<None>', 'Operator Select', 'Talkback', '1-(1-Tampa Bay)(1-FSG Tampa)', 'None', '1-(1-Tampa Bay)(1-FSG Tampa)', 'Infinite', '0', 'True', 'False', '10')));
+                                                      
+    // Set the content type to be XML, so that the browser will   recognise it as XML.
+    header( "content-type: application/xml; charset=UTF-8" );
+
   
     /* below function takes two inputs, the default array for the type and the $input array, and returns a sanatized array */
     function SetDefaults($default, $input)  {
@@ -29,15 +44,199 @@
      
      Array
      Personality["Conventional Personality Name"] => ["Type"] => ["Frequency Name"] = $frequency
+     */
      
-     
-     
+  
+    function ZoneChanAss($input) {
+        // create a zone recset
+        //<Recset Name="Zone Channel Assignment" Id="2051">
+        $attr_recset_features = new DOMAttr('Name','Zone Channel Assignment');
+        $recsec_node->setAttributeNode($attr_recset_features);
+        $attr_recset_features = new DOMAttr('Id','2051');
+        $recsec_node->setAttributeNode($attr_recset_features);
+        foreach (array_keys($input) as $index => $ZoneName) {
+            // now make a Node under the Recset to hold the Zone
+            // <Node Name="Zone Channel Assignment" ReferenceKey="1-Tampa Bay">
+            // take the ref and add 1 to it
+            $RefKey = (((($index + '1') . "-" . $ZoneName)));
+            $Node = $xml->createElement( "Node" );
+            $Node_attr = new DOMAttr('Name','Zone Channel Assignment');
+            $Node->setAttributeNode($Node_attr);
+            $Node_attr = new DOMAttr('ReferenceKey', $RefKey);
+            $Node->setAttributeNode($Node_attr);
+            
+            // now add two sections for the zone properties
+            //first section
+            $Section = $xml->createElement( "Section" );
+            $Section_attr = new DOMAttr('Name','Zone');
+            $Section->setAttributeNode($Section_attr);
+            $Section_attr = new DOMAttr('id','10116');
+            $Section->setAttributeNode($Section_attr);
+            
+            // now the fields in the section
+            $Field_attr = new DOMAttr('Name','Zone Announcement');
+            $Field = $xml->createElement( "Field", $input[$ZoneName]['ZonePrefs']['Zone Announcement'] );
+            $Field->setAttributeNode($Field_attr);
+            $Section->appendChild($Field);
+            
+            $Field_attr = new DOMAttr('Name','Zone Name');
+            $Field = $xml->createElement( "Field", $input[$ZoneName]['ZonePrefs']['Zone Name'] );
+            $Field->setAttributeNode($Field_attr);
+            $Section->appendChild($Field);
+            
+            $Field_attr = new DOMAttr('Name','Dynamic Zone Enable');
+            $Field = $xml->createElement( "Field", $input[$ZoneName]['ZonePrefs']['Dynamic Zone Enable'] );
+            $Field->setAttributeNode($Field_attr);
+            $Section->appendChild($Field);
+            // append to the child Node
+            $Node->appendChild($Section);
+            
+            //Second section
+            $Section = $xml->createElement( "Section" );
+            $Section_attr = new DOMAttr('Name','FPP/Protection');
+            $Section->setAttributeNode($Section_attr);
+            $Section_attr = new DOMAttr('id','10117');
+            $Section->setAttributeNode($Section_attr);
+            
+            // now the fields in the section
+            $Field_attr = new DOMAttr('Name','Protected Zone');
+            $Field = $xml->createElement( "Field", $input[$ZoneName]['ZonePrefs']['Protected Zone'] );
+            $Field->setAttributeNode($Field_attr);
+            $Section->appendChild($Field);
+            
+            $Field_attr = new DOMAttr('Name','FPP Enable');
+            $Field = $xml->createElement( "Field", $input[$ZoneName]['ZonePrefs']['FPP Enable'] );
+            $Field->setAttributeNode($Field_attr);
+            $Section->appendChild($Field);
+
+            // append to the child Node
+            $Node->appendChild($Section);
+            
+            // now per frequencies but only if it exists
+            //Frequency section
+            //<Section Name="Channels" id="10114" Embedded="True">
+            $Section = $xml->createElement( "Section" );
+            $Section_attr = new DOMAttr('Name','Channels');
+            $Section->setAttributeNode($Section_attr);
+            $Section_attr = new DOMAttr('id','10114');
+            $Section->setAttributeNode($Section_attr);
+            $Section_attr = new DOMAttr('Embedded','True');
+            $Section->setAttributeNode($Section_attr);
+
+            // first the <EmbeddedRecset Name="Channel Assignment List" Id="0">
+            
+            $EmbeddedRecset_attr = new DOMAttr('Name','Channel Assignment List');
+            $EmbeddedRecset = $xml->createElement( "EmbeddedRecset" );
+            $EmbeddedRecset->setAttributeNode($EmbeddedRecset_attr);
+            $EmbeddedRecset_attr = new DOMAttr('Id','0');
+            $EmbeddedRecset->setAttributeNode($EmbeddedRecset_attr);
+            $Section->appendChild($EmbeddedRecset);
+
+            if (empty($input[$ZoneName]['ChanAssList']) == 0 ){
+                print "empty";
+                foreach (array_keys($input[$ZoneName]['ChanAssList']) as $FreqIndex => $ChanAssListName) {
+                    $FreqRefKey = (((($FreqIndex + '1') . "-" . $input[$ZoneName]['ChanAssList']['Channel Name'])));
+
+                    // now the embeded node
+                    // <EmbeddedNode Name="Channel Assignment List" ReferenceKey="1-FSG Tampa">
+                    $EmbeddedNode_attr = new DOMAttr('Name','Channel Assignment List');
+                    $EmbeddedNode = $xml->createElement( "EmbeddedNode" );
+                    $EmbeddedNode->setAttributeNode($EmbeddedNode_attr);
+                    $EmbeddedNode_attr = new DOMAttr('ReferenceKey', $FreqRefKey );
+                    $EmbeddedNode->setAttributeNode($EmbeddedNode_attr);
+                    $EmbeddedRecset->appendChild($EmbeddedNode);
+                    
+                    // Embedded Frequency options section
+                    // <EmbeddedSection Name="Channel Assignment List" id="10115">
+                    $EmbeddedSection = $xml->createElement( "EmbeddedSection" );
+                    $EmbeddedSection_attr = new DOMAttr('Name','Channel Assignment List');
+                    $EmbeddedSection->setAttributeNode($EmbeddedSection_attr);
+                    $EmbeddedSection_attr = new DOMAttr('id','10115');
+                    $EmbeddedSection->setAttributeNode($EmbeddedSection_attr);
+                    $EmbeddedNode->appendChild($EmbeddedSection);
+                    
+                    // Now fields in the embeddedsection in the EmbeddedNode which is the frequency
+                    
+                    $Field_attr = new DOMAttr('Name','Channel Type');
+                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList']['Channel Type'] );
+                    $Field->setAttributeNode($Field_attr);
+                    $EmbeddedSection->appendChild($Field);
+                    
+                    $Field_attr = new DOMAttr('Name','Personality');
+                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList']['Personality'] );
+                    $Field->setAttributeNode($Field_attr);
+                    $EmbeddedSection->appendChild($Field);
+                    
+                    $Field_attr = new DOMAttr('Name','Channel Announcement');
+                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList']['Channel Announcement'] );
+                    $Field->setAttributeNode($Field_attr);
+                    $EmbeddedSection->appendChild($Field);
+                    
+                    $Field_attr = new DOMAttr('Name','Radio Profile Selection');
+                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList']['Radio Profile Selection'] );
+                    $Field->setAttributeNode($Field_attr);
+                    $EmbeddedSection->appendChild($Field);
+                    $Field_attr = new DOMAttr('Name','Conventional Frequency Option');
+                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList']['Conventional Frequency Option'] );
+                    $Field->setAttributeNode($Field_attr);
+                    $EmbeddedSection->appendChild($Field);
+                    $Field_attr = new DOMAttr('Name','Channel Name');
+                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList']['Channel Name'] );
+                    $Field->setAttributeNode($Field_attr);
+                    $EmbeddedSection->appendChild($Field);
+                    $Field_attr = new DOMAttr('Name','Trunking Talkgroup');
+                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList']['Trunking Talkgroup'] );
+                    $Field->setAttributeNode($Field_attr);
+                    $EmbeddedSection->appendChild($Field);
+                    $Field_attr = new DOMAttr('Name','Active Channel');
+                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList']['Active Channel'] );
+                    $Field->setAttributeNode($Field_attr);
+                    $EmbeddedSection->appendChild($Field);
+                    $Field_attr = new DOMAttr('Name','Channel Color Backlight Selection '); // needs the space at the end!
+                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList']['Channel Color Backlight Selection'] );
+                    $Field->setAttributeNode($Field_attr);
+                    $EmbeddedSection->appendChild($Field);
+                    $Field_attr = new DOMAttr('Name','Personnel Accountability Sector ID (hex)');
+                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList']['Personnel Accountability Sector ID (hex)'] );
+                    $Field->setAttributeNode($Field_attr);
+                    $EmbeddedSection->appendChild($Field);
+                    
+                    
+                    
+
+            
+            };
+                
+            };
+            
+            $Node->appendChild($Section);
+        
+$recsec_node->appendChild($Node);
+        
+        };
+    };
+    
+    // this is broken, it works outside the function
+    function ZoneChanAss11($input) {
+        // create a zone recset
+        //<Recset Name="Zone Channel Assignment" Id="2051">
+        //print_r ($input);
+        $attr_recset_features = new DOMAttr('Name','Zone Channel Assignment');
+        $recsec_node->setAttributeNode($attr_recset_features);
+     //   $attr_recset_features = new DOMAttr('Id','2051');
+      //  $recsec_node->setAttributeNode($attr_recset_features);
+        //test
+       // $recsec_node->appendChild($Node);
+    };
+
+    
     
 /* Map Rows and Loop Through Them */
     $rows   = array_map('str_getcsv', file('./freq.csv'));
     //$header = array_shift($rows);
     $personality = array();
     $frequencies = array();
+    $zones = array();
     $i = 0;
     foreach ($rows as $row) {
         //need some kinda check that the length of the csv data matches the input
@@ -58,13 +257,29 @@
             $personality[$pers][$type][$freqname] = $clean ;
             unset ($clean, $type, $pers, $freqname);
         }
-        
+        elseif ($row[0] == "Zone"){
+            // clean up the array
+            $clean =  SetDefaults($ZoneDefaults, (array_combine($ZoneHeader, $row)));
+            $zone = $clean["Zone Name"];
+            $type = $clean["Type"];
+            $zones[$zone]['ZonePrefs'] = $clean ;
+            unset ($clean, $type, $zone, $freqname);
+        }
+        elseif ($row[0] == "ChanAssList"){
+            // clean up the array
+            $clean =  SetDefaults($ChanAssListDefaults, (array_combine($ChanAssListHeader, $row)));
+            $zone = $clean["Zone Name"];
+            $channame = $clean["Channel Name"];
+            $type = $clean["Type"];
+            $zones[$zone][$type][$channame] = $clean ;
+            unset ($clean, $type, $zone, $channame);
+        }
+
         elseif (empty($row[0])) { echo "Blank Type on row ", $i , ": " , (implode(", ", $row)), "\n"; }
         elseif ((empty($row[0])) != True) { echo "Unknown type \"$row[0]\" on row ", $i , ": " , (implode(", ", $row)), "\n"; }
         $i++;
         };
-    unset($i);
-   // print_R($personality);
+    unset($i, $rows, $frequencies);
     
     // check that if there's a Freq, there's a Conv and vice versa.  If  not,
     // add in the defaults.
@@ -76,8 +291,6 @@
             $type = "ConvPers" ;
             $personality[$pers][$type] = $ConvDefaults ;
             unset ($clean, $type, $pers, $freqname);
-
-            
         };
         if (empty($personality[$key]['Freq'])) {
             print "ERROR: '" . $key . "' is missing at least one frequency\n";
@@ -90,35 +303,18 @@
         };
     };
     
-    print_r ($personality);
-         // clean up the array
-           // $clean =  SetDefaults($ConvDefaults, (array_combine($ConvHeader, $row)));
-            //$pers = $clean["Conventional Personality Name"];
-           // $type = $clean["Type"];
-           // $personality[$pers][$type] = $clean ;
-           // unset ($clean, $type, $pers);
-        //}
-
+   // print_r ($personality);
     
     
     
   
     // should we clean up the array with htmlspecialchars() since XML will die if fed an & sign?
-    
     // now we should have the data in the right array.
-    
-    //foreach (array_keys($personality) as $PersName) {
-      //  echo "$PersName \n";
-      //  foreach (array_keys($personality[$value]) as $conv) {
-      //      echo "Value: $value Conv: $conv \n";
-      //      print_r ($personality[$value][$conv]);
-      //  };
-  //  };
     
     
     
     // Set the content type to be XML, so that the browser will   recognise it as XML.
-    header( "content-type: application/xml; charset=UTF-8" );
+  //  header( "content-type: application/xml; charset=UTF-8" );
     
     // "Create" the document.
     $xml = new DOMDocument( "1.0", "UTF-8" );
@@ -135,13 +331,15 @@
     $root_node->setAttributeNode($attr_root_features);
     $recsec_node = $xml->createElement( "Recset" );
     
+
+    
     // create a conventional personality recset
     //<Recset Name="Conventional Personality" Id="2059">
     $attr_recset_features = new DOMAttr('Name','Conventional Personality');
     $recsec_node->setAttributeNode($attr_recset_features);
     $attr_recset_features = new DOMAttr('Id','2059');
     $recsec_node->setAttributeNode($attr_recset_features);
-    
+    /*
     
     foreach (array_keys($personality) as $PersName) {
         // now make a Node under the Recset to hold the personality
@@ -814,7 +1012,7 @@
          
          $Node->appendChild($Section);
          
-         */
+ 
         
             // Secure options section
             $Section = $xml->createElement( "Section" );
@@ -927,6 +1125,9 @@
             $Node->appendChild($Section);
         $recsec_node->appendChild($Node);
     };
+    */
+    
+    ZoneChanAss($zones);
     $root_node->appendChild($recsec_node);
     //var_dump ($version);
     $root_import->appendChild($version);
