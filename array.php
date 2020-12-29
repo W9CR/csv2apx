@@ -50,6 +50,9 @@
     function ZoneChanAss($input) {
         // create a zone recset
         //<Recset Name="Zone Channel Assignment" Id="2051">
+        global $recsec_node;
+        global $node;
+        global $xml;
         $attr_recset_features = new DOMAttr('Name','Zone Channel Assignment');
         $recsec_node->setAttributeNode($attr_recset_features);
         $attr_recset_features = new DOMAttr('Id','2051');
@@ -133,10 +136,13 @@
             $Section->appendChild($EmbeddedRecset);
 
             if (empty($input[$ZoneName]['ChanAssList']) == 0 ){
-                print "empty";
+                //print "empty";
                 foreach (array_keys($input[$ZoneName]['ChanAssList']) as $FreqIndex => $ChanAssListName) {
-                    $FreqRefKey = (((($FreqIndex + '1') . "-" . $input[$ZoneName]['ChanAssList']['Channel Name'])));
-
+                    $FreqRefKey = (((($FreqIndex + '1') . "-" . $input[$ZoneName]['ChanAssList'][$ChanAssListName]['Channel Name'])));
+                   // echo "channel name::::";
+                  //  print_r($input[$ZoneName]['ChanAssList'][$ChanAssListName]['Channel Name']);
+                  //  print $ChanAssListName;
+                  //  echo "\n";
                     // now the embeded node
                     // <EmbeddedNode Name="Channel Assignment List" ReferenceKey="1-FSG Tampa">
                     $EmbeddedNode_attr = new DOMAttr('Name','Channel Assignment List');
@@ -158,46 +164,46 @@
                     // Now fields in the embeddedsection in the EmbeddedNode which is the frequency
                     
                     $Field_attr = new DOMAttr('Name','Channel Type');
-                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList']['Channel Type'] );
+                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList'][$ChanAssListName]['Channel Type'] );
                     $Field->setAttributeNode($Field_attr);
                     $EmbeddedSection->appendChild($Field);
                     
                     $Field_attr = new DOMAttr('Name','Personality');
-                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList']['Personality'] );
+                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList'][$ChanAssListName]['Personality'] );
                     $Field->setAttributeNode($Field_attr);
                     $EmbeddedSection->appendChild($Field);
                     
                     $Field_attr = new DOMAttr('Name','Channel Announcement');
-                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList']['Channel Announcement'] );
+                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList'][$ChanAssListName]['Channel Announcement'] );
                     $Field->setAttributeNode($Field_attr);
                     $EmbeddedSection->appendChild($Field);
                     
                     $Field_attr = new DOMAttr('Name','Radio Profile Selection');
-                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList']['Radio Profile Selection'] );
+                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList'][$ChanAssListName]['Radio Profile Selection'] );
                     $Field->setAttributeNode($Field_attr);
                     $EmbeddedSection->appendChild($Field);
                     $Field_attr = new DOMAttr('Name','Conventional Frequency Option');
-                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList']['Conventional Frequency Option'] );
+                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList'][$ChanAssListName]['Conventional Frequency Option'] );
                     $Field->setAttributeNode($Field_attr);
                     $EmbeddedSection->appendChild($Field);
                     $Field_attr = new DOMAttr('Name','Channel Name');
-                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList']['Channel Name'] );
+                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList'][$ChanAssListName]['Channel Name'] );
                     $Field->setAttributeNode($Field_attr);
                     $EmbeddedSection->appendChild($Field);
                     $Field_attr = new DOMAttr('Name','Trunking Talkgroup');
-                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList']['Trunking Talkgroup'] );
+                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList'][$ChanAssListName]['Trunking Talkgroup'] );
                     $Field->setAttributeNode($Field_attr);
                     $EmbeddedSection->appendChild($Field);
                     $Field_attr = new DOMAttr('Name','Active Channel');
-                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList']['Active Channel'] );
+                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList'][$ChanAssListName]['Active Channel'] );
                     $Field->setAttributeNode($Field_attr);
                     $EmbeddedSection->appendChild($Field);
                     $Field_attr = new DOMAttr('Name','Channel Color Backlight Selection '); // needs the space at the end!
-                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList']['Channel Color Backlight Selection'] );
+                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList'][$ChanAssListName]['Channel Color Backlight Selection'] );
                     $Field->setAttributeNode($Field_attr);
                     $EmbeddedSection->appendChild($Field);
                     $Field_attr = new DOMAttr('Name','Personnel Accountability Sector ID (hex)');
-                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList']['Personnel Accountability Sector ID (hex)'] );
+                    $Field = $xml->createElement( "Field", $input[$ZoneName]['ChanAssList'][$ChanAssListName]['Personnel Accountability Sector ID (hex)'] );
                     $Field->setAttributeNode($Field_attr);
                     $EmbeddedSection->appendChild($Field);
                     
@@ -216,18 +222,22 @@ $recsec_node->appendChild($Node);
         };
     };
     
-    // this is broken, it works outside the function
-    function ZoneChanAss11($input) {
+    /* this is broken, it works outside the function
+    function ZoneChanAss03($input) {
         // create a zone recset
         //<Recset Name="Zone Channel Assignment" Id="2051">
         //print_r ($input);
+        global $recsec_node ;
         $attr_recset_features = new DOMAttr('Name','Zone Channel Assignment');
-        $recsec_node->setAttributeNode($attr_recset_features);
+        print_r($recsec_node);
+        print_r(get_class_methods(recsec_node));
+    //    $recsec_node->setAttributeNode($attr_recset_features);
      //   $attr_recset_features = new DOMAttr('Id','2051');
       //  $recsec_node->setAttributeNode($attr_recset_features);
         //test
        // $recsec_node->appendChild($Node);
     };
+     */
 
     
     
@@ -317,6 +327,7 @@ $recsec_node->appendChild($Node);
   //  header( "content-type: application/xml; charset=UTF-8" );
     
     // "Create" the document.
+    global $xml;
     $xml = new DOMDocument( "1.0", "UTF-8" );
     
     // Create  elements.
@@ -329,6 +340,7 @@ $recsec_node->appendChild($Node);
     $root_node->setAttributeNode($attr_root_features);
     $attr_root_features = new DOMAttr('ConverterGenerated','False');
     $root_node->setAttributeNode($attr_root_features);
+    global $recsec_node;
     $recsec_node = $xml->createElement( "Recset" );
     
 
